@@ -35,5 +35,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         #name: tabledump.tableplusplugin
-        path: tabledump.tableplusplugin
+        path: ./
         overwrite: true
