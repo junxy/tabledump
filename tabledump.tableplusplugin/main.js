@@ -1,6 +1,6 @@
 'use strict';
 
-import { dumpTableAsDefinition, dumpTableAsLaravel } from './library/helper';
+import { dumpTableAsDefinition, dumpTableAsLaravel, dumpTableAsSQLAlchemy } from './library/helper';
 
 var creation = function(context) {
     // Get table in opening tab
@@ -44,7 +44,19 @@ var laravel = function(context)  {
     dumpTableAsLaravel(context, item);
 }
 
+var sqlalchemy = function(context)  {
+    // Get table in opening tab
+    let item = context.clickedItem();
+    if (item == null) {
+        context.alert('Error', 'Please select a Table');
+        return;
+    }
+    dumpTableAsSQLAlchemy(context, item);
+}
+
+
 global.creation = creation;
 global.drop = drop;
 global.truncate = truncate;
 global.laravel = laravel;
+global.sqlalchemy = sqlalchemy;
