@@ -294,7 +294,7 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, ext
     //migration += "->unsigned()";
   }
   
-  is_pk = false
+  var is_pk = false
   if (defaultVal) {
     if (defaultVal.toLowerCase().startsWith("nextval('")) {
         migration += ", primary_key=True";
@@ -304,10 +304,10 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, ext
             case "int2":
             case "int4":
             case "int8":
-                migration += ", default=" + defaultVal + "";
+                migration += ", default=" + defaultVal;
                 break;
             case "bool":
-                migration += ", default=" + (defaultVal=='true' ? 'True' : 'False') + "";
+                migration += ", default=" + (defaultVal=='true' ? 'True' : 'False');
                 break;
             default:
                 migration += ", default='" + defaultVal + "'";
