@@ -210,7 +210,7 @@ class Create${nameCamelcase}Table extends Migration
 }
 
 
-function getColumnSQLAlchemy(columnName, dataType, isNullable, defaultVal, extra, columnComment) {
+function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, extra, columnComment) {
   var typeArr = dataType.split("(");
   var typeOnly = typeArr[0];
   var typeLength = "";
@@ -221,7 +221,7 @@ function getColumnSQLAlchemy(columnName, dataType, isNullable, defaultVal, extra
   switch (typeOnly) {
     case "varchar":
       if (typeLength.length > 0) {
-        migration = `${columnName} = Column(String`;
+        migration = `${columnName} = Column(String(${typeLength})`;
       } else {
         migration = `${columnName} = Column(String`;
       }
@@ -240,14 +240,15 @@ function getColumnSQLAlchemy(columnName, dataType, isNullable, defaultVal, extra
       break;
     case "float4":
     case "float8":
-      migration = "$table->float('" + columnName + "')";
+      migration = `${columnName} = Column(BigInteger`;
       break;
     case "char":
-      migration = "$table->char('" + columnName + "', " + typeLength + "";
+    case "bpchar":
+      migration = `${columnName} = Column(String(${typeLength})`;
       break;
     case "enum":
       typeLength = typeLength.substring(0, typeLength.length - 1);
-      migration = "$table->enum('" + columnName + "', [" + typeLength + "])";
+      migration = `${columnName} = Column(SQLAlchemyEnum('${typeLength}')`;
       break;
     case "int8":
     case "bigint":
@@ -259,37 +260,56 @@ function getColumnSQLAlchemy(columnName, dataType, isNullable, defaultVal, extra
       break;
     case "int3":
     case "mediumint":
-      migration = "$table->mediumInteger('" + columnName + "')";
+      migration = `${columnName} = Column(Integer`;
       break;
     case "int2":
     case "smallint":
-      migration = "$table->smallInteger('" + columnName + "')";
+      migration = `${columnName} = Column(SmallInteger`;
       break;
     case "int1":
     case "tinyint":
-      migration = "$table->tinyInteger('" + columnName + "')";
+      migration = `${columnName} = Column(SmallInteger`;
       break;
+    case "timestamp":
+      migration = `${columnName} = Column(DateTime`;
+      break
+    case "text":
+      migration = `${columnName} = Column(Text`;
+      break
+    case "_varchar":
+      migration = `${columnName} = Column(postgresql.ARRAY(String)`;
+      break
+    case "jsonb":
+      migration = `${columnName} = Column(JSONB(none_as_null=True)`;
+      break
     default:
       migration = `${columnName} = Column(${typeOnly}`;
       break;
   }
+
   if (dataType.includes("unsigned")) {
     //migration += "->unsigned()";
   }
   
-  if (isNullable.toLowerCase().startsWith("y")) {
-    migration += " ,nullable=True";
+  if (isNullable.toLowerCase().startsWith("no")) {
+    migration += " ,nullable=False";
   }
   
   if (defaultVal) {
-    migration += " ,default='" + defaultVal + "'";
-  }
-    
-  if (extra) {
-    switch (extra) {
-      case "auto_increment":
-        migration += " ,primary_key=True, autoincrement=True";
-        break;
+    if (defaultVal.toLowerCase().startsWith("nextval('")) {
+        migration += " ,primary_key=True";
+    } else {
+        switch (typeOnly) {
+            case "int2":
+            case "int4":
+            case "int8":
+            case "bool":
+                migration += " ,default=" + defaultVal + "";
+                break;
+            default:
+                migration += " ,default='" + defaultVal + "'";
+                break;
+        }
     }
   }
   
@@ -301,7 +321,7 @@ function getColumnSQLAlchemy(columnName, dataType, isNullable, defaultVal, extra
 }
 
 
-function dumpTableAsSQLAlchemy(context, item) {
+function dumpTableAsSQLAlchemyPG(context, item) {
   var nameCamelcase = camelize(item.name());
   var header = `
 
@@ -366,7 +386,7 @@ class ${nameCamelcase}(db_manager.Base):
     var result = header;
     
     for (let i = 0; i < columnNames.length; i++) {
-      var columnMigrate = getColumnSQLAlchemy(
+      var columnMigrate = getColumnSQLAlchemyPG(
         columnNames[i],
         columnTypes[i],
         isNullables[i],
@@ -387,4 +407,4 @@ class ${nameCamelcase}(db_manager.Base):
   });
 }
 
-export { dumpTableAsDefinition, dumpTableAsLaravel, dumpTableAsSQLAlchemy };
+export { dumpTableAsDefinition, dumpTableAsLaravel, dumpTableAsSQLAlchemyPG };

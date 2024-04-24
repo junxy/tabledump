@@ -46,8 +46,8 @@
                 {
                     "type": "action",
                     "script": "dumpcreation.js",
-                    "handler": "sqlalchemy",
-                    "name": "SQLAlchemy Model"
+                    "handler": "sqlalchemy_pg",
+                    "name": "SQLAlchemy(PG) Model"
                 }
             ]
         }
