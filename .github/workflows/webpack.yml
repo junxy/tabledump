@@ -34,6 +34,8 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        #name: tabledump.tableplusplugin
-        path: ./
+        name: com.tinyapp.TablePlus.TableDump.tableplusplugin
         overwrite: true
+        path: |
+          tabledump.tableplusplugin/
+          !node_modules/
