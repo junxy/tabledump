@@ -30,4 +30,10 @@ jobs:
       run: |
         npm install
         npm run build
-        
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        #name: tabledump.tableplusplugin
+        path: tabledump.tableplusplugin
+        overwrite: true
