@@ -270,6 +270,9 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, ext
     case "tinyint":
       migration = `${columnName} = Column(SmallInteger`;
       break;
+    case "bool":
+      migration = `${columnName} = Column(Boolean`;
+      break
     case "timestamp":
       migration = `${columnName} = Column(DateTime`;
       break
@@ -291,30 +294,34 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, ext
     //migration += "->unsigned()";
   }
   
-  if (isNullable.toLowerCase().startsWith("no")) {
-    migration += " ,nullable=False";
-  }
-  
+  is_pk = false
   if (defaultVal) {
     if (defaultVal.toLowerCase().startsWith("nextval('")) {
-        migration += " ,primary_key=True";
+        migration += ", primary_key=True";
+        is_pk = true
     } else {
         switch (typeOnly) {
             case "int2":
             case "int4":
             case "int8":
+                migration += ", default=" + defaultVal + "";
+                break;
             case "bool":
-                migration += " ,default=" + defaultVal + "";
+                migration += ", default=" + (defaultVal=='true' ? 'True' : 'False') + "";
                 break;
             default:
-                migration += " ,default='" + defaultVal + "'";
+                migration += ", default='" + defaultVal + "'";
                 break;
         }
     }
   }
+
+  if (isNullable.toLowerCase().startsWith("no") && !is_pk) {
+    migration += ", nullable=False";
+  }
   
   if (typeof columnComment != 'undefined' && columnComment) {
-    migration += " ,comment='" + columnComment.trim() + "'";
+    migration += ", comment='" + columnComment.trim() + "'";
   }
 
   return migration + ")";
@@ -327,7 +334,8 @@ function dumpTableAsSQLAlchemyPG(context, item) {
 
 from enum import Enum
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Enum as SQLAlchemyEnum
+from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, DateTime, Boolean, Enum as SQLAlchemyEnum
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 
 class ${nameCamelcase}(db_manager.Base):
