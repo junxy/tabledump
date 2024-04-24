@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -23,7 +23,10 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Build
+      # ref: https://stackoverflow.com/questions/57806624/github-actions-how-to-build-project-in-sub-directory
+      working-directory: tabledump.tableplusplugin
+      # npx webpack
       run: |
         npm install
         npm run build
-        # npx webpack
+        
