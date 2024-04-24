@@ -38,4 +38,4 @@ jobs:
         overwrite: true
         path: |
           tabledump.tableplusplugin/
-          !node_modules/**
+          !**/node_modules/**
