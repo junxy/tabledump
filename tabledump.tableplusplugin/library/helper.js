@@ -210,18 +210,14 @@ class Create${nameCamelcase}Table extends Migration
 }
 
 
-function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, extra, columnComment) {
+function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, dataLength, columnComment) {
   var typeArr = dataType.split("(");
   var typeOnly = typeArr[0];
-  var typeLength = "";
-  if (typeArr.length > 1) {
-    typeLength = typeArr[1];
-  }
   var migration = "";
   switch (typeOnly) {
     case "varchar":
-      if (typeLength.length > 0) {
-        migration = `${columnName} = Column(String(${typeLength})`;
+      if (dataLength && dataLength > 0) {
+        migration = `${columnName} = Column(String(${dataLength})`;
       } else {
         migration = `${columnName} = Column(String`;
       }
@@ -229,7 +225,7 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, ext
     case "float":
     case "double":
     case "decimal":
-      if (typeLength.length > 0) {
+      if (dataLength && dataLength > 0) {
         // Pretty length format: 8,2) => 8, 2)
         typeLength = typeLength.replace(",", ", ");
         migration =
@@ -300,18 +296,12 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, ext
         migration += ", primary_key=True";
         is_pk = true
     } else {
-        switch (typeOnly) {
-            case "int2":
-            case "int4":
-            case "int8":
-                migration += ", default=" + defaultVal;
-                break;
-            case "bool":
-                migration += ", default=" + (defaultVal=='true' ? 'True' : 'False');
-                break;
-            default:
-                migration += ", default='" + defaultVal + "'";
-                break;
+        if (typeOnly.toLowerCase().startsWith("int")) {
+          migration += ", default=" + defaultVal;
+        } else if(typeOnly.toLowerCase() == 'bool') {
+          migration += ", default=" + (defaultVal=='true' ? 'True' : 'False');
+        } else {
+          migration += ", default='" + defaultVal + "'";
         }
     }
   }
@@ -355,6 +345,7 @@ class ${nameCamelcase}(db_manager.Base):
   var defaultVals = [];
   var columnComments = [];
   var extras = [];
+  var dataLengths = [];
   var query;
   var driver = context.driver();
   switch (driver) {
@@ -391,6 +382,7 @@ class ${nameCamelcase}(db_manager.Base):
       defaultVals.push(defaultVal);
       extras.push(extra);
       columnComments.push(row.raw("comment"));
+      dataLengths.push(row.raw("data_length"))
     });
     
     var result = header;
@@ -401,7 +393,7 @@ class ${nameCamelcase}(db_manager.Base):
         columnTypes[i],
         isNullables[i],
         defaultVals[i],
-        extras[i],
+        dataLengths[i],
         columnComments[i]
       );
       result += `    ${columnMigrate}\n`;
