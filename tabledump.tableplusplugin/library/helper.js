@@ -293,7 +293,7 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, dat
   var is_pk = false
   if (defaultVal) {
     if (defaultVal.toLowerCase().startsWith("nextval('")) {
-        migration += ", primary_key=True";
+        migration += ", primary_key=True, autoincrement=True";
         is_pk = true
     } else {
         if (typeOnly.toLowerCase().startsWith("int")) {
