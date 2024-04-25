@@ -511,11 +511,15 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
   } else {
     if (is_nullable) {
       migration += "None"
+    } else {
+      migration += "..."
     }
   }
 
   if (typeof columnComment != 'undefined' && columnComment) {
     migration += ", description='" + columnComment.trim() + "'";
+  } else {
+    migration += ", description=''";
   }
 
   return migration + ")";
