@@ -514,10 +514,6 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
     }
   }
 
-  if (isNullable.toLowerCase().startsWith("no") && !is_pk) {
-    // migration += ", nullable=False";
-  }
-  
   if (typeof columnComment != 'undefined' && columnComment) {
     migration += ", description='" + columnComment.trim() + "'";
   }
