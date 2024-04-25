@@ -342,7 +342,7 @@ class ${nameCamelcase}(db_manager.Base):
   var extras = [];
   var dataLengths = [];
   var numeric_precisions = []
-  var numeric_scale = []
+  var numeric_scales = []
   var query;
   var driver = context.driver();
   switch (driver) {
