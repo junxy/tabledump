@@ -1,6 +1,6 @@
 'use strict';
 
-import { dumpTableAsDefinition, dumpTableAsLaravel, dumpTableAsSQLAlchemyPG } from './library/helper';
+import { dumpTableAsDefinition, dumpTableAsLaravel, dumpTableAsSQLAlchemyPG, dumpTableAsPydantic } from './library/helper';
 
 var creation = function(context) {
     // Get table in opening tab
@@ -54,9 +54,19 @@ var sqlalchemy_pg = function(context)  {
     dumpTableAsSQLAlchemyPG(context, item);
 }
 
+var pydantic = function(context)  {
+    // Get table in opening tab
+    let item = context.clickedItem();
+    if (item == null) {
+        context.alert('Error', 'Please select a Table');
+        return;
+    }
+    dumpTableAsPydantic(context, item);
+}
 
 global.creation = creation;
 global.drop = drop;
 global.truncate = truncate;
 global.laravel = laravel;
 global.sqlalchemy_pg = sqlalchemy_pg;
+global.pydantic = pydantic

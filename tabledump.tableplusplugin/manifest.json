@@ -48,6 +48,12 @@
                     "script": "dumpcreation.js",
                     "handler": "sqlalchemy_pg",
                     "name": "SQLAlchemy(PG) Model"
+                },
+                {
+                    "type": "action",
+                    "script": "dumpcreation.js",
+                    "handler": "pydantic",
+                    "name": "Pydantic Schema"
                 }
             ]
         }
