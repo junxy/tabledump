@@ -433,10 +433,10 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
     case "numeric":
       if (numericPrecision && numericPrecision > 0) {
         // Pretty length format: 8,2) => 8, 2)
-        // migration = `${columnName}: Decimal(${numericPrecision}, ${numericScale})`;
+        migration = `${columnName}: Decimal(${numericPrecision}, ${numericScale})`;
       } else {
-      }
         migration = `${columnName}: Decimal`;
+      }
       break;
     case "jsonb":
       migration = `${columnName}: dict`;
@@ -515,6 +515,10 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
     } else {
       migration += "..."
     }
+  }
+
+  if (dataLength && dataLength > 0) {
+    migration += `, max_length=${dataLength}`
   }
 
   if (typeof columnComment != 'undefined' && columnComment) {
