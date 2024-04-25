@@ -210,41 +210,45 @@ class Create${nameCamelcase}Table extends Migration
 }
 
 
-function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, dataLength, columnComment) {
+function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, dataLength, columnComment, numericPrecision, numericScale) {
   var typeArr = dataType.split("(");
   var typeOnly = typeArr[0];
   var migration = "";
   switch (typeOnly) {
     case "varchar":
+    //case "char":
+    case "bpchar":
       if (dataLength && dataLength > 0) {
         migration = `${columnName} = Column(String(${dataLength})`;
       } else {
         migration = `${columnName} = Column(String`;
       }
       break;
-    case "float":
-    case "double":
+    case "_varchar":
+      migration = `${columnName} = Column(postgresql.ARRAY(String)`;
+      break
     case "decimal":
-      if (dataLength && dataLength > 0) {
+      if (numericPrecision && numericPrecision > 0) {
         // Pretty length format: 8,2) => 8, 2)
-        typeLength = typeLength.replace(",", ", ");
-        migration =
-          `$table->${typeOnly}('` + columnName + "', " + typeLength + "";
+        migration = `${columnName} = Column(Numeric(${numericPrecision}, ${numericScale})`;
       } else {
-        migration = `$table->${typeOnly}('` + columnName + "')";
+        migration = `${columnName} = Column(Numeric`;
       }
       break;
+    case "jsonb":
+      migration = `${columnName} = Column(JSONB(none_as_null=True)`;
+      break
+    case "enum":
+      migration = `${columnName} = Column(SQLAlchemyEnum('${dataLength}')`;
+      break;
+    case "timestamp":
+      migration = `${columnName} = Column(DateTime`;
+      break
+    case "float":
+    case "double":
     case "float4":
     case "float8":
-      migration = `${columnName} = Column(BigInteger`;
-      break;
-    case "char":
-    case "bpchar":
-      migration = `${columnName} = Column(String(${typeLength})`;
-      break;
-    case "enum":
-      typeLength = typeLength.substring(0, typeLength.length - 1);
-      migration = `${columnName} = Column(SQLAlchemyEnum('${typeLength}')`;
+      migration = `${columnName} = Column(Float`;
       break;
     case "int8":
     case "bigint":
@@ -269,17 +273,8 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, dat
     case "bool":
       migration = `${columnName} = Column(Boolean`;
       break
-    case "timestamp":
-      migration = `${columnName} = Column(DateTime`;
-      break
     case "text":
       migration = `${columnName} = Column(Text`;
-      break
-    case "_varchar":
-      migration = `${columnName} = Column(postgresql.ARRAY(String)`;
-      break
-    case "jsonb":
-      migration = `${columnName} = Column(JSONB(none_as_null=True)`;
       break
     default:
       migration = `${columnName} = Column(${typeOnly}`;
@@ -301,7 +296,7 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, dat
         } else if(typeOnly.toLowerCase() == 'bool') {
           migration += ", default=" + (defaultVal=='true' ? 'True' : 'False');
         } else {
-          migration += ", default='" + defaultVal + "'";
+          migration += ", default=" + defaultVal.split("::")[0] + "";
         }
     }
   }
@@ -324,7 +319,7 @@ function dumpTableAsSQLAlchemyPG(context, item) {
 
 from enum import Enum
 
-from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, DateTime, Boolean, Enum as SQLAlchemyEnum
+from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, Numeric, Float, DateTime, Boolean, Enum as SQLAlchemyEnum
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -346,6 +341,8 @@ class ${nameCamelcase}(db_manager.Base):
   var columnComments = [];
   var extras = [];
   var dataLengths = [];
+  var numeric_precisions = []
+  var numeric_scale = []
   var query;
   var driver = context.driver();
   switch (driver) {
@@ -353,6 +350,7 @@ class ${nameCamelcase}(db_manager.Base):
     case "MariaDB":
       query = `SELECT ordinal_position as ordinal_position,column_name as column_name,column_type AS data_type,is_nullable as is_nullable,column_default as column_default,extra as extra,column_name AS foreign_key,column_comment AS comment FROM information_schema.columns WHERE table_schema='${item.schema()}'AND table_name='${item.name()}';`;
       // break;
+      // 暂时不支持
       context.alert("Error", driver + " is not currently supported");
       return;
     case "PostgreSQL":
@@ -383,6 +381,8 @@ class ${nameCamelcase}(db_manager.Base):
       extras.push(extra);
       columnComments.push(row.raw("comment"));
       dataLengths.push(row.raw("data_length"))
+      numeric_precisions.push(row.raw("numeric_precision"))
+      numeric_scales.push(row.raw("numeric_scale"))
     });
     
     var result = header;
@@ -394,7 +394,9 @@ class ${nameCamelcase}(db_manager.Base):
         isNullables[i],
         defaultVals[i],
         dataLengths[i],
-        columnComments[i]
+        columnComments[i],
+        numeric_precisions[i],
+        numeric_scales[i]
       );
       result += `    ${columnMigrate}\n`;
     }
@@ -403,7 +405,7 @@ class ${nameCamelcase}(db_manager.Base):
 `;
     SystemService.insertToClipboard(result);
     SystemService.notify(
-      "SQLAlchemy export",
+      "SQLAlchemy(PG) Model export",
       item.type() + " " + item.name() + " export statement is copied!"
     );
   });
