@@ -342,8 +342,8 @@ class ${nameCamelcase}(db_manager.Base):
   var columnComments = [];
   var extras = [];
   var dataLengths = [];
-  var numeric_precisions = []
-  var numeric_scales = []
+  var numericPrecisions = []
+  var numericScales = []
   var query;
   var driver = context.driver();
   switch (driver) {
@@ -382,8 +382,8 @@ class ${nameCamelcase}(db_manager.Base):
       extras.push(extra);
       columnComments.push(row.raw("comment"));
       dataLengths.push(row.raw("data_length"))
-      numeric_precisions.push(row.raw("numeric_precision"))
-      numeric_scales.push(row.raw("numeric_scale"))
+      numericPrecisions.push(row.raw("numeric_precision"))
+      numericScales.push(row.raw("numeric_scale"))
     });
     
     var result = header;
@@ -396,8 +396,8 @@ class ${nameCamelcase}(db_manager.Base):
         defaultVals[i],
         dataLengths[i],
         columnComments[i],
-        numeric_precisions[i],
-        numeric_scales[i]
+        numericPrecisions[i],
+        numericScales[i]
       );
       result += `    ${columnMigrate}\n`;
     }
@@ -480,7 +480,7 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
       migration = `${columnName}: str`;
       break
     default:
-      migration = `${columnName}:object`;
+      migration = `${columnName}: object`;
       break;
   }
 
@@ -488,7 +488,7 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
     //migration += "->unsigned()";
   }
 
-  is_nullable = false
+  var is_nullable = false
   if (isNullable.toLowerCase().startsWith("yes")) {
     migration += " | None = Field("
     is_nullable = true
@@ -551,8 +551,8 @@ class ${nameCamelcase}QueryOut(BaseModel):
   var columnComments = [];
   var extras = [];
   var dataLengths = [];
-  var numeric_precisions = []
-  var numeric_scales = []
+  var numericPrecisions = []
+  var numericScales = []
   var query;
   var driver = context.driver();
   switch (driver) {
@@ -591,8 +591,8 @@ class ${nameCamelcase}QueryOut(BaseModel):
       extras.push(extra);
       columnComments.push(row.raw("comment"));
       dataLengths.push(row.raw("data_length"))
-      numeric_precisions.push(row.raw("numeric_precision"))
-      numeric_scales.push(row.raw("numeric_scale"))
+      numericPrecisions.push(row.raw("numeric_precision"))
+      numericScales.push(row.raw("numeric_scale"))
     });
     
     var result = header;
@@ -605,10 +605,10 @@ class ${nameCamelcase}QueryOut(BaseModel):
         defaultVals[i],
         dataLengths[i],
         columnComments[i],
-        numeric_precisions[i],
-        numeric_scales[i]
+        numericPrecisions[i],
+        numericScales[i]
       );
-      // result += `    ${columnMigrate}\n`;
+      result += `    ${columnMigrate}\n`;
     }
     result += `
 #end
