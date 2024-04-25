@@ -416,6 +416,7 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
   var typeArr = dataType.split("(");
   var typeOnly = typeArr[0];
   var migration = "";
+  var is_decimal = false
   switch (typeOnly) {
     case "varchar":
     //case "char":
@@ -431,12 +432,8 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
       break
     case "decimal":
     case "numeric":
-      if (numericPrecision && numericPrecision > 0) {
-        // Pretty length format: 8,2) => 8, 2)
-        migration = `${columnName}: Decimal(${numericPrecision}, ${numericScale})`;
-      } else {
-        migration = `${columnName}: Decimal`;
-      }
+      migration = `${columnName}: Decimal`;
+      is_decimal = true
       break;
     case "jsonb":
       migration = `${columnName}: dict`;
@@ -519,6 +516,9 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
 
   if (dataLength && dataLength > 0) {
     migration += `, max_length=${dataLength}`
+  }
+  if (numericScale && numericScale > 0 && is_decimal) {
+    migration += `, decimal_places=${numericScale}`
   }
 
   if (typeof columnComment != 'undefined' && columnComment) {
