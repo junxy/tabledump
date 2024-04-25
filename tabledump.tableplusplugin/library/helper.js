@@ -228,6 +228,7 @@ function getColumnSQLAlchemyPG(columnName, dataType, isNullable, defaultVal, dat
       migration = `${columnName} = Column(postgresql.ARRAY(String)`;
       break
     case "decimal":
+    case "numeric":
       if (numericPrecision && numericPrecision > 0) {
         // Pretty length format: 8,2) => 8, 2)
         migration = `${columnName} = Column(Numeric(${numericPrecision}, ${numericScale})`;
@@ -319,7 +320,7 @@ function dumpTableAsSQLAlchemyPG(context, item) {
 
 from enum import Enum
 
-from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, Numeric, Float, DateTime, Boolean, Enum as SQLAlchemyEnum
+from sqlalchemy import Column, SmallInteger, Integer, BigInteger, String, Numeric, Float, DateTime, Boolean, Text, Enum as SQLAlchemyEnum
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 
