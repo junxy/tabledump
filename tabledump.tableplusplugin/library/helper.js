@@ -498,7 +498,8 @@ function getColumnPydantic(columnName, dataType, isNullable, defaultVal, dataLen
   
   if (defaultVal) {
     if (defaultVal.toLowerCase().startsWith("nextval('")) {
-        // migration += ", primary_key=True, autoincrement=True";
+      // migration += ", primary_key=True, autoincrement=True";
+      migration += "..."
     } else {
         if (typeOnly.toLowerCase().startsWith("int")) {
           migration += "" + defaultVal;
