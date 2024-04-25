@@ -608,7 +608,7 @@ class ${nameCamelcase}QueryOut(BaseModel):
         numeric_precisions[i],
         numeric_scales[i]
       );
-      result += `    ${columnMigrate}\n`;
+      // result += `    ${columnMigrate}\n`;
     }
     result += `
 #end
